@@ -1,0 +1,178 @@
+<pre><code>
+&lt;script&gt;
+// Hacker Digital Clock
+function updateHackerClock() {
+  const now = new Date();
+  const timeString = now.toLocaleTimeString('en-US', {
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+
+  const dateString = now.toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: '2-digit',
+    year: 'numeric'
+  }).toUpperCase();
+
+  document.getElementById('hacker-time').textContent = timeString;
+  document.getElementById('hacker-date').textContent = dateString;
+}
+
+setInterval(updateHackerClock, 1000);
+updateHackerClock();
+
+// Uptime counter
+let seconds = 413;
+
+function updateUptime() {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
+  const timeString =
+    String(hours).padStart(2, '0') + ':' +
+    String(minutes).padStart(2, '0') + ':' +
+    String(secs).padStart(2, '0');
+
+  document.getElementById('uptime').textContent = timeString;
+  seconds++;
+}
+
+setInterval(updateUptime, 1000);
+
+// Shortcuts toggle
+function toggleShortcuts() {
+  const shortcuts = document.getElementById('shortcuts');
+  const arrow = document.getElementById('arrow');
+
+  shortcuts.classList.toggle('expanded');
+  arrow.classList.toggle('collapsed');
+}
+
+// Terminal functionality
+const commandInput = document.getElementById('command-input');
+const commandHistory = document.getElementById('command-history');
+let historyIndex = -1;
+let commandLog = [];
+
+const commands = {
+  help: () =&gt; `&lt;div class=&quot;help-section&quot;&gt;
+  &lt;div class=&quot;help-command&quot;&gt;Available Commands:&lt;/div&gt;
+  &lt;div class=&quot;help-description&quot;&gt;help - Show this help message&lt;/div&gt;
+  &lt;div class=&quot;help-description&quot;&gt;about - Information about Creed's Domain&lt;/div&gt;
+  &lt;div class=&quot;help-description&quot;&gt;whoami - Display current user information&lt;/div&gt;
+  &lt;div class=&quot;help-description&quot;&gt;ls - List directory contents&lt;/div&gt;
+  &lt;div class=&quot;help-description&quot;&gt;pwd - Print working directory&lt;/div&gt;
+  &lt;div class=&quot;help-description&quot;&gt;date - Display current date and time&lt;/div&gt;
+  &lt;div class=&quot;help-description&quot;&gt;clear - Clear the terminal screen&lt;/div&gt;
+  &lt;div class=&quot;help-description&quot;&gt;matrix - Enter the matrix...&lt;/div&gt;
+  &lt;div class=&quot;help-description&quot;&gt;hack - Initiate hacking sequence&lt;/div&gt;
+  &lt;div class=&quot;help-description&quot;&gt;status - System status report&lt;/div&gt;
+  &lt;div class=&quot;help-description&quot;&gt;contact - How to reach Creed&lt;/div&gt;
+  &lt;div class=&quot;help-description&quot;&gt;shortcuts - Toggle access shortcuts panel&lt;/div&gt;
+&lt;/div&gt;`,
+
+  about: () =&gt; `&lt;div class=&quot;info&quot;&gt;Welcome to Creed's Domain...&lt;/div&gt;`,
+
+  whoami: () =&gt; `&lt;div class=&quot;success&quot;&gt;creed&lt;br&gt;Domain Administrator&lt;/div&gt;`,
+
+  ls: () =&gt; `&lt;div class=&quot;output&quot;&gt;projects/&lt;br&gt;documents/&lt;br&gt;shortcuts/&lt;br&gt;README.txt&lt;br&gt;secrets.encrypted&lt;/div&gt;`,
+
+  pwd: () =&gt; '&lt;div class=&quot;output&quot;&gt;/home/creed/domain&lt;/div&gt;',
+
+  date: () =&gt; `&lt;div class=&quot;output&quot;&gt;${new Date().toString()}&lt;/div&gt;`,
+
+  clear: () =&gt; {
+    commandHistory.innerHTML = '';
+    return '';
+  },
+
+  shortcuts: () =&gt; {
+    toggleShortcuts();
+    return '&lt;div class=&quot;success&quot;&gt;Access shortcuts panel toggled.&lt;/div&gt;';
+  },
+
+  matrix: () =&gt; {
+    let output = '&lt;div class=&quot;success&quot;&gt;Entering the Matrix...&lt;/div&gt;';
+    let chars = '01';
+    for (let i = 0; i &lt; 8; i++) {
+      let line = '';
+      for (let j = 0; j &lt; 50; j++) {
+        line += chars[Math.floor(Math.random() * chars.length)];
+      }
+      output += `&lt;div style=&quot;color: #00ff41;&quot;&gt;${line}&lt;/div&gt;`;
+    }
+    output += '&lt;div class=&quot;success&quot;&gt;Welcome to the Matrix, Neo.&lt;/div&gt;';
+    return output;
+  },
+
+  hack: () =&gt; `&lt;div class=&quot;warning&quot;&gt;Initiating hack sequence...&lt;/div&gt;`,
+
+  status: () =&gt; `&lt;div class=&quot;info&quot;&gt;System Status: All systems operational&lt;/div&gt;`,
+
+  contact: () =&gt; `&lt;div class=&quot;success&quot;&gt;Contact Creed via encrypted channels&lt;/div&gt;`
+};
+
+function executeCommand(cmd) {
+  const trimmedCmd = cmd.trim().toLowerCase();
+  if (commands[trimmedCmd]) {
+    return commands[trimmedCmd]();
+  } else if (trimmedCmd === '') {
+    return '';
+  } else {
+    return `&lt;div class=&quot;error&quot;&gt;Command not found: ${cmd}&lt;/div&gt;`;
+  }
+}
+
+function addToHistory(command, output) {
+  const historyItem = document.createElement('div');
+  historyItem.innerHTML = `
+    &lt;div class=&quot;command-line&quot;&gt;
+      &lt;span class=&quot;prompt&quot;&gt;&lt;span class=&quot;user&quot;&gt;creed&lt;/span&gt;@&lt;span class=&quot;domain&quot;&gt;domain&lt;/span&gt;:~$&lt;/span&gt;
+      &lt;span&gt;${command}&lt;/span&gt;
+    &lt;/div&gt;
+    ${output}
+  `;
+  commandHistory.appendChild(historyItem);
+  commandHistory.scrollTop = commandHistory.scrollHeight;
+}
+
+function runTerminalCommand(cmd) {
+  const output = executeCommand(cmd);
+  addToHistory(cmd, output);
+  commandInput.focus();
+}
+
+commandInput.addEventListener('keydown', (e) =&gt; {
+  if (e.key === 'Enter') {
+    const command = commandInput.value;
+    const output = executeCommand(command);
+    addToHistory(command, output);
+    commandLog.push(command);
+    historyIndex = commandLog.length;
+    commandInput.value = '';
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (historyIndex &gt; 0) {
+      historyIndex--;
+      commandInput.value = commandLog[historyIndex];
+    }
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (historyIndex &lt; commandLog.length - 1) {
+      historyIndex++;
+      commandInput.value = commandLog[historyIndex];
+    } else {
+      historyIndex = commandLog.length;
+      commandInput.value = '';
+    }
+  }
+});
+
+commandInput.focus();
+document.addEventListener('click', () =&gt; commandInput.focus());
+&lt;/script&gt;
+</code></pre>
